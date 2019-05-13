@@ -119,7 +119,11 @@ convertSingleR2Browser = function(singler,use.singler.cluster.annot=T) {
   
   expr = NULL
   if (!is.null(singler$seurat)) {
-    expr = singler$seurat@data
+    if (packageVersion('Seurat')>=3) {
+      expr = singler$seurat@assays$RNA@data
+    } else {
+      expr = singler$seurat@data
+    }
   } 
   singler.small = new('SingleR',project.name=singler$meta.data$project.name,
                       xy=singler$meta.data$xy,
@@ -147,4 +151,19 @@ if (FALSE) {
     singler.small = convertSingleR2Browser(singler)
     saveRDS(singler.small,file=paste0('~/Documents/SingleR/SingleRbrowseR/data/',gsub('RData','rds',files[i])))
   }
+}
+
+SingleR.SubsetS4 = function(singler,subsetdata) {
+  s = singler
+  s@xy = s@xy[subsetdata,]
+  s@labels = s@labels[subsetdata,]
+  s@labels.NFT = s@labels.NFT[subsetdata,]
+  s@clusters = as.data.frame(s@clusters[subsetdata,])
+  s@ident = as.data.frame(s@ident[subsetdata,])
+  s@other = as.data.frame(s@other[subsetdata,])
+  for (k in names(s@scores)) {
+    s@scores[[k]] = s@scores[[k]][subsetdata,]
+  }
+  s@expr = s@expr[,subsetdata]
+  s
 }
